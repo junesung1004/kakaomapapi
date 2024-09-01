@@ -9,6 +9,10 @@ export default function CategoryPage() {
   const [search, setSearch] = useState(""); // setSearch를 사용하면 실시간으로 출력이되고 api가 과부하가 올 수 있기에 검색을 하고 버튼을 눌렀을때 하는 로직을 추가해야함
   const [realSearch, setRealSearch] = useState(""); // <<-- 이 코드가 바로 그 코드
   const [place, setPlace] = useState([]);
+  const [currentPostion, setCurrentPosition] = useState({
+    latitude: null,
+    longitude: null,
+  });
 
   //카카오 스크립트 호출
   useEffect(() => {
@@ -25,16 +29,20 @@ export default function CategoryPage() {
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition((position) => {
             const { latitude, longitude } = position.coords;
+            setCurrentPosition({
+              latitude,
+              longitude,
+            });
             const container = document.getElementById("map"); // 지도를 그려줄 영역
             const options = {
               // 카카오지도 기능중 하나인 위도,경도로 센터를 잡고 지도 확대/축소 설정
               center: new window.kakao.maps.LatLng(latitude, longitude),
-              level: 8,
+              level: 3,
             };
             //새로운 객체를 생성해서 map에다 저장하기
             const map = new window.kakao.maps.Map(container, options);
             if (realSearch) {
-              searchPlace(realSearch, map);
+              searchPlace(realSearch, map, currentPostion.latitude, currentPostion.longitude);
             }
           });
         }
@@ -48,28 +56,36 @@ export default function CategoryPage() {
     if (mapContainer && realSearch) {
       const options = {
         // 카카오지도 기능중 하나인 위도,경도로 센터를 잡고 지도 확대/축소 설정
-        center: new window.kakao.maps.LatLng(33.123423, 126.123123),
-        level: 8,
+        center: new window.kakao.maps.LatLng(currentPostion.latitude, currentPostion.longitude),
+        level: 5,
       };
       const map = new window.kakao.maps.Map(mapContainer, options);
-      searchPlace(realSearch, map);
+      searchPlace(realSearch, map, currentPostion.latitude, currentPostion.longitude);
     }
   }, [realSearch]);
 
   //키워드 기반 검색함수
-  const searchPlace = (location, map) => {
+  const searchPlace = (location, map, latitude, longitude) => {
     const ps = new window.kakao.maps.services.Places();
-    ps.keywordSearch(location, (data, status) => {
-      if (status === window.kakao.maps.services.Status.OK) {
-        setPlace(data);
-        const bounds = new window.kakao.maps.LatLngBounds();
-        for (let i = 0; i < data.length; i++) {
-          displayMarker(map, data[i]);
-          bounds.extend(new window.kakao.maps.LatLng(data[i].y, data[i].x));
+    const searchOptions = {
+      location: new window.kakao.maps.LatLng(latitude, longitude),
+      radius: 2000, // 자기 위치 기반 반경 설정 코드
+    };
+    ps.keywordSearch(
+      location,
+      (data, status) => {
+        if (status === window.kakao.maps.services.Status.OK) {
+          setPlace(data);
+          const bounds = new window.kakao.maps.LatLngBounds();
+          for (let i = 0; i < data.length; i++) {
+            displayMarker(map, data[i]);
+            bounds.extend(new window.kakao.maps.LatLng(data[i].y, data[i].x));
+          }
+          map.setBounds(bounds);
         }
-        map.setBounds(bounds);
-      }
-    });
+      },
+      searchOptions
+    );
   };
 
   //마커를 표시해주는 함수
