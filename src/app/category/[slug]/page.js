@@ -88,7 +88,7 @@ export default function CategoryPage() {
     );
   };
 
-  //마커를 표시해주는 함수
+  //마커를 표시해주는 함수.
   const displayMarker = (map, place) => {
     const marker = new kakao.maps.Marker({
       map: map,
