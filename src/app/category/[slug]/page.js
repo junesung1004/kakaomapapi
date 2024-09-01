@@ -94,6 +94,9 @@ export default function CategoryPage() {
       map: map,
       position: new window.kakao.maps.LatLng(place.y, place.x),
     });
+    window.kakao.maps.event.addListener(marker, "click", () => {
+      window.location.href = place.place_url;
+    });
   };
 
   const handleClickSearch = () => {
