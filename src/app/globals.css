@@ -1,0 +1,30 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  padding: 0;
+  margin: 0 auto;
+  max-width: 360px;
+  height: 100vh;
+  background-color: #dedede;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+li {
+  cursor: pointer;
+}
+
+button {
+  border: none;
+}
